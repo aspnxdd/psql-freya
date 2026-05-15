@@ -80,18 +80,49 @@ impl Component for MainArea {
     }
 }
 
+fn estimate_text_width(text: &str) -> f32 {
+    text.chars().count() as f32 * 6.0
+}
+
+fn compute_column_widths(result: &QueryResult) -> Vec<f32> {
+    let padding = 8.0;
+    let min_width = 60.0;
+    let max_width = 400.0;
+
+    let mut widths: Vec<f32> = result
+        .columns
+        .iter()
+        .map(|col| estimate_text_width(col) + padding)
+        .collect();
+
+    for row in &result.rows {
+        for (j, cell) in row.iter().enumerate() {
+            if let Some(w) = widths.get_mut(j) {
+                let cell_width = estimate_text_width(cell) + padding;
+                if cell_width > *w {
+                    *w = cell_width;
+                }
+            }
+        }
+    }
+
+    widths.iter_mut().for_each(|w| *w = w.clamp(min_width, max_width));
+    widths
+}
+
 fn results_grid(results: Option<QueryResult>) -> impl IntoElement {
     match results {
         Some(result) => {
             let cols = result.columns.clone();
             let rows = result.rows.clone();
+            let column_widths = compute_column_widths(&result);
 
             rect()
                 .expanded()
                 .child(
                     VirtualScrollView::new_with_data(
-                        (cols.clone(), rows.clone()),
-                        move |i, (cols, rows)| {
+                        (cols.clone(), rows.clone(), column_widths),
+                        move |i, (cols, rows, widths)| {
                             if i == 0 {
                                 rect()
                                     .key(0)
@@ -99,9 +130,10 @@ fn results_grid(results: Option<QueryResult>) -> impl IntoElement {
                                     .background((40, 40, 40))
                                     .direction(Direction::Horizontal)
                                     .children(cols.iter().enumerate().map(|(j, col)| {
+                                        let w = widths.get(j).copied().unwrap_or(140.0);
                                         rect()
                                             .key(j)
-                                            .width(Size::px(140.))
+                                            .width(Size::px(w))
                                             .padding(Gaps::new_all(4.))
                                             .child(label().text(col.clone()).color(Color::WHITE).font_size(11.))
                                             .into_element()
@@ -114,9 +146,10 @@ fn results_grid(results: Option<QueryResult>) -> impl IntoElement {
                                     .height(Size::px(24.))
                                     .direction(Direction::Horizontal)
                                     .children(row.iter().enumerate().map(|(j, cell)| {
+                                        let w = widths.get(j).copied().unwrap_or(140.0);
                                         rect()
                                             .key(j)
-                                            .width(Size::px(140.))
+                                            .width(Size::px(w))
                                             .padding(Gaps::new_all(4.))
                                             .child(
                                                 label()
@@ -128,11 +161,11 @@ fn results_grid(results: Option<QueryResult>) -> impl IntoElement {
                                     }))
                                     .into()
                             }
-                        }
+                        },
                     )
                     .length(rows.len() + 1)
                     .item_size(24.)
-                    .expanded()
+                    .expanded(),
                 )
         }
         None => rect().expanded().center().child(
