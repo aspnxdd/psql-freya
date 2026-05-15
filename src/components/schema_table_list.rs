@@ -22,30 +22,30 @@ impl Component for SchemaTableList {
             .height(Size::fill())
             .background(colors.surface_secondary)
             .padding(Gaps::new_all(12.))
-            .child(label().text("Schemas").font_size(16.).theme_color())
-            .child(divider())
-            .child(rect().height(Size::px(150.)).spacing(4.).children(
-                schemas.iter().enumerate().map(|(i, schema)| {
-                    schema_item(
-                        i,
-                        schema,
-                        selected_schema.as_deref() == Some(schema.as_str()),
-                        radio,
-                    )
-                    .into_element()
-                }),
-            ))
-            .child(divider())
-            .child(label().text("Tables").font_size(16.).theme_color())
-            .child(divider())
             .child(
-                rect()
-                    .expanded()
-                    .spacing(4.)
-                    .children(tables.iter().enumerate().map(|(i, table)| {
-                        table_item(i, table, selected_table.as_ref() == Some(table), radio)
+                ScrollView::new()
+                    .child(label().text("Schemas").font_size(16.).theme_color())
+                    .child(divider())
+                    .child(rect().spacing(4.).children(schemas.iter().enumerate().map(
+                        |(i, schema)| {
+                            schema_item(
+                                i,
+                                schema,
+                                selected_schema.as_deref() == Some(schema.as_str()),
+                                radio,
+                            )
                             .into_element()
-                    })),
+                        },
+                    )))
+                    .child(divider())
+                    .child(label().text("Tables").font_size(16.).theme_color())
+                    .child(divider())
+                    .child(rect().spacing(4.).children(tables.iter().enumerate().map(
+                        |(i, table)| {
+                            table_item(i, table, selected_table.as_ref() == Some(table), radio)
+                                .into_element()
+                        },
+                    ))),
             )
     }
 }
