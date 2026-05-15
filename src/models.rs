@@ -1,3 +1,5 @@
+use crate::config::load_config;
+use freya::radio::RadioChannel;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio_postgres::Client;
@@ -24,28 +26,49 @@ pub struct QueryResult {
     pub rows: Vec<Vec<String>>,
 }
 
-#[derive(Clone, Default)]
 pub struct AppState {
     pub connections: Vec<ConnectionConfig>,
     pub selected_connection: Option<usize>,
+    pub show_form: bool,
+    pub editing_connection: Option<usize>,
+    pub show_delete_confirm: Option<usize>,
+
     pub client: Option<Arc<Client>>,
     pub schemas: Vec<String>,
     pub selected_schema: Option<String>,
     pub tables: Vec<TableInfo>,
     pub selected_table: Option<TableInfo>,
+
     pub query_text: String,
     pub query_results: Option<QueryResult>,
     pub error_message: Option<String>,
-    pub show_form: bool,
-    pub editing_connection: Option<usize>,
-    pub show_delete_confirm: Option<usize>,
+}
+
+impl AppState {
+    pub fn new() -> Self {
+        Self {
+            connections: load_config(),
+            selected_connection: None,
+            show_form: false,
+            editing_connection: None,
+            show_delete_confirm: None,
+            client: None,
+            schemas: Vec::new(),
+            selected_schema: None,
+            tables: Vec::new(),
+            selected_table: None,
+            query_text: String::new(),
+            query_results: None,
+            error_message: None,
+        }
+    }
 }
 
 #[derive(PartialEq, Eq, Clone, Debug, Copy, Hash)]
 pub enum AppChannel {
+    Connections,
     DbMeta,
-    QueryResults,
-    Ui,
+    Query,
 }
 
-impl freya::radio::RadioChannel<AppState> for AppChannel {}
+impl RadioChannel<AppState> for AppChannel {}

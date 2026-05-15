@@ -98,9 +98,7 @@ fn parse_array(row: &Row, index: usize, elem_type: &Type) -> String {
         "float8" => format_array(row, index, |v: f64| v.to_string()),
         "numeric" => format_array(row, index, |v: Decimal| v.to_string()),
         "bool" => format_array(row, index, |v: bool| v.to_string()),
-        "text" | "varchar" | "char" | "bpchar" | "name" => {
-            format_array(row, index, |v: String| v)
-        }
+        "text" | "varchar" | "char" | "bpchar" | "name" => format_array(row, index, |v: String| v),
         "timestamp" => format_array(row, index, |v: NaiveDateTime| v.to_string()),
         "timestamptz" => format_array(row, index, |v: DateTime<FixedOffset>| v.to_rfc3339()),
         "date" => format_array(row, index, |v: NaiveDate| v.to_string()),

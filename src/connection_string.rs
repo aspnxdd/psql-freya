@@ -9,8 +9,7 @@ pub struct ParsedConnection {
 }
 
 pub fn parse_postgres_url(input: &str) -> Result<ParsedConnection, String> {
-    let url = Url::parse(input.trim())
-        .map_err(|e| format!("Invalid URL: {}", e))?;
+    let url = Url::parse(input.trim()).map_err(|e| format!("Invalid URL: {}", e))?;
 
     let scheme = url.scheme();
     if scheme != "postgresql" && scheme != "postgres" {
