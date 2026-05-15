@@ -1,4 +1,5 @@
 use crate::models::{ConnectionConfig, QueryResult, TableInfo};
+use crate::value_parser::parse_value;
 use std::sync::Arc;
 use tokio_postgres::{Client, NoTls};
 
@@ -56,8 +57,8 @@ pub async fn run_query(client: &Client, sql: &str) -> Result<QueryResult, String
         sql.to_string()
     } else {
         format!("{} LIMIT 1000", sql)
-    };
-    // select * from "public"."accounts"
+    }; 
+     // select * from "public"."accounts"
 
     let stmt = client
         .prepare(&limited_sql)
@@ -75,39 +76,8 @@ pub async fn run_query(client: &Client, sql: &str) -> Result<QueryResult, String
     let mut data = Vec::new();
     for row in rows {
         let mut row_data = Vec::new();
-        for (i, _) in columns.iter().enumerate() {
-            let col_type = stmt.columns()[i].type_().name();
-            let value: String = match col_type {
-                "int2" => row
-                    .get::<_, Option<i16>>(i)
-                    .map(|v| v.to_string())
-                    .unwrap_or_else(|| "NULL".to_string()),
-                "int4" => row
-                    .get::<_, Option<i32>>(i)
-                    .map(|v| v.to_string())
-                    .unwrap_or_else(|| "NULL".to_string()),
-                "int8" => row
-                    .get::<_, Option<i64>>(i)
-                    .map(|v| v.to_string())
-                    .unwrap_or_else(|| "NULL".to_string()),
-                "float4" => row
-                    .get::<_, Option<f32>>(i)
-                    .map(|v| v.to_string())
-                    .unwrap_or_else(|| "NULL".to_string()),
-                "float8" => row
-                    .get::<_, Option<f64>>(i)
-                    .map(|v| v.to_string())
-                    .unwrap_or_else(|| "NULL".to_string()),
-                "bool" => row
-                    .get::<_, Option<bool>>(i)
-                    .map(|v| v.to_string())
-                    .unwrap_or_else(|| "NULL".to_string()),
-                "timestamp" | "timestamptz" => "a timestamp".to_string(), // Placeholder for timestamp types
-                "uuid" => "a uuid".to_string(), // Placeholder for UUID types
-                _ => row
-                    .get::<_, Option<String>>(i)
-                    .unwrap_or_else(|| "NULL".to_string()),
-            };
+        for (i, col) in stmt.columns().iter().enumerate() {
+            let value = parse_value(&row, i, col.type_());
             row_data.push(value);
         }
         data.push(row_data);

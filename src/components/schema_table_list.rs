@@ -12,18 +12,19 @@ impl Component for SchemaTableList {
         let schemas = radio.read().schemas.clone();
         let selected_schema = radio.read().selected_schema.clone();
         let tables = radio.read().tables.clone();
+        let selected_table = radio.read().selected_table.clone();
 
         rect()
             .width(Size::px(220.))
             .height(Size::fill())
-            .background((40, 40, 48))
+            .background((40, 40, 40))
             .direction(Direction::Vertical)
             .padding(Gaps::new_all(12.))
             .child(label().text("Schemas").font_size(16.).color(Color::WHITE))
             .child(
                 rect()
                     .height(Size::px(1.))
-                    .background((60, 60, 70))
+                    .background((55, 55, 55))
                     .margin(Gaps::new(8., 0., 8., 0.)),
             )
             .child(
@@ -37,9 +38,9 @@ impl Component for SchemaTableList {
                             .height(Size::px(28.))
                             .corner_radius(CornerRadius::new_all(4.))
                             .background(if is_selected {
-                                (60, 60, 70)
+                                (50, 50, 50)
                             } else {
-                                (40, 40, 48)
+                                (40, 40, 40)
                             })
                             .padding(Gaps::new(0., 6., 0., 6.))
                             .main_align(Alignment::Center)
@@ -79,23 +80,28 @@ impl Component for SchemaTableList {
             .child(
                 rect()
                     .height(Size::px(1.))
-                    .background((60, 60, 70))
+                    .background((55, 55, 55))
                     .margin(Gaps::new(8., 0., 8., 0.)),
             )
             .child(label().text("Tables").font_size(16.).color(Color::WHITE))
             .child(
                 rect()
                     .height(Size::px(1.))
-                    .background((60, 60, 70))
+                    .background((55, 55, 55))
                     .margin(Gaps::new(8., 0., 8., 0.)),
             )
             .child(rect().expanded().direction(Direction::Vertical).children(
                 tables.iter().enumerate().map(|(i, table)| {
+                    let is_selected = selected_table.as_ref() == Some(table);
                     rect()
                         .key(i)
                         .height(Size::px(28.))
                         .corner_radius(CornerRadius::new_all(4.))
-                        .background((40, 40, 48))
+                        .background(if is_selected {
+                            (50, 50, 50)
+                        } else {
+                            (40, 40, 40)
+                        })
                         .padding(Gaps::new(0., 6., 0., 6.))
                         .main_align(Alignment::Center)
                         .child(
@@ -113,10 +119,12 @@ impl Component for SchemaTableList {
                                         r#"SELECT * FROM "{}"."{}""#,
                                         table.schema, table.name
                                     );
+                                    let table = table.clone();
                                     spawn(async move {
                                         match run_query(&client, &sql).await {
                                             Ok(result) => {
                                                 let mut state = radio.write();
+                                                state.selected_table = Some(table);
                                                 state.query_text = sql;
                                                 state.query_results = Some(result);
                                                 state.error_message = None;

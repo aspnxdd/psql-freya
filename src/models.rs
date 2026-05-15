@@ -32,11 +32,13 @@ pub struct AppState {
     pub schemas: Vec<String>,
     pub selected_schema: Option<String>,
     pub tables: Vec<TableInfo>,
+    pub selected_table: Option<TableInfo>,
     pub query_text: String,
     pub query_results: Option<QueryResult>,
     pub error_message: Option<String>,
     pub show_form: bool,
     pub editing_connection: Option<usize>,
+    pub show_delete_confirm: Option<usize>,
 }
 
 #[derive(PartialEq, Eq, Clone, Debug, Copy, Hash)]

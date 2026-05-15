@@ -1,4 +1,3 @@
-use crate::config::save_config;
 use crate::db::connect;
 use crate::models::AppChannel;
 use freya::prelude::*;
@@ -15,7 +14,7 @@ impl Component for Sidebar {
         rect()
             .width(Size::px(260.))
             .height(Size::fill())
-            .background((35, 35, 40))
+            .background((35, 35, 35))
             .direction(Direction::Vertical)
             .content(Content::Flex)
             .padding(Gaps::new_all(12.))
@@ -28,7 +27,7 @@ impl Component for Sidebar {
             .child(
                 rect()
                     .height(Size::px(1.))
-                    .background((60, 60, 70))
+                    .background((55, 55, 55))
                     .margin(Gaps::new(8., 0., 8., 0.)),
             )
             .child(
@@ -44,9 +43,9 @@ impl Component for Sidebar {
                             .height(Size::px(40.))
                             .corner_radius(CornerRadius::new_all(6.))
                             .background(if is_selected {
-                                (60, 60, 70)
+                                (50, 50, 50)
                             } else {
-                                (45, 45, 55)
+                                (42, 42, 42)
                             })
                             .padding(Gaps::new(0., 8., 0., 8.))
                             .direction(Direction::Horizontal)
@@ -93,7 +92,7 @@ impl Component for Sidebar {
                                         label()
                                             .text("Edit")
                                             .font_size(11.)
-                                            .color((180, 180, 180))
+                                            .color((255, 140, 0))
                                             .on_mouse_up({
                                                 let mut radio = radio;
                                                 move |_| {
@@ -106,21 +105,11 @@ impl Component for Sidebar {
                                         label()
                                             .text("Del")
                                             .font_size(11.)
-                                            .color((180, 180, 180))
+                                            .color((255, 140, 0))
                                             .margin(Gaps::new(0., 0., 0., 8.))
                                             .on_mouse_up({
                                                 move |_| {
-                                                    let mut state = radio.write();
-                                                    state.connections.remove(i);
-                                                    if state.selected_connection == Some(i) {
-                                                        state.selected_connection = None;
-                                                        state.client = None;
-                                                        state.schemas.clear();
-                                                        state.tables.clear();
-                                                        state.query_results = None;
-                                                        state.error_message = None;
-                                                    }
-                                                    save_config(&state.connections);
+                                                    radio.write().show_delete_confirm = Some(i);
                                                 }
                                             }),
                                     ),
