@@ -11,6 +11,7 @@ pub struct ConnectionForm;
 impl Component for ConnectionForm {
     fn render(&self) -> impl IntoElement {
         let mut radio = use_radio(AppChannel::Connections);
+        let error_color = use_theme().read().colors.error;
         let editing = radio.read().editing_connection;
         let initial = editing.and_then(|i| radio.read().connections.get(i).cloned());
 
@@ -112,9 +113,7 @@ impl Component for ConnectionForm {
                         .child(form_input("User", user))
                         .child(form_input("Password", password))
                         .map(error.read().clone(), |el, err| {
-                            let theme = use_theme();
-                            let err_color = theme.read().colors.error;
-                            el.child(label().text(err).color(err_color).font_size(12.))
+                            el.child(label().text(err).color(error_color).font_size(12.))
                         }),
                 ),
             )

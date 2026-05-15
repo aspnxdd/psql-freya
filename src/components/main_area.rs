@@ -19,6 +19,7 @@ pub struct MainArea;
 impl Component for MainArea {
     fn render(&self) -> impl IntoElement {
         let mut radio = use_radio(AppChannel::Query);
+        let error_color = use_theme().read().colors.error;
         let query_text = radio
             .slice_mut_current(|s| &mut s.query_text)
             .into_writable();
@@ -83,13 +84,14 @@ impl Component for MainArea {
                             ),
                     ),
             )
-            .map(error_message, |el, err| el.child(error_banner(&err)))
+            .map(error_message, |el, err| {
+                el.child(error_banner(&err, error_color))
+            })
             .child(results_grid(query_results))
     }
 }
 
-fn error_banner(message: &str) -> Rect {
-    let color = use_theme().read().colors.error;
+fn error_banner(message: &str, color: Color) -> Rect {
     rect()
         .background(Color::from_rgb(80, 30, 30))
         .corner_radius(CornerRadius::new_all(6.))
