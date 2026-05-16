@@ -57,8 +57,8 @@ pub async fn run_query(client: &Client, sql: &str) -> Result<QueryResult, String
         sql.to_string()
     } else {
         format!("{} LIMIT 1000", sql)
-    }; 
-     // select * from "public"."accounts"
+    };
+    // select * from "public"."accounts"
 
     let stmt = client
         .prepare(&limited_sql)
